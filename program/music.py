@@ -71,7 +71,7 @@ async def play(c: Client, m: Message):
     a = await c.get_chat_member(chat_id, aing.id)
     if a.status != "administrator":
         await m.reply_text(
-            f"💡 To use me, I need to be an **Administrator** with the following **permissions**:\n\n» ❌ __Delete messages__\n» ❌ __Restrict users__\n» ❌ __Add users__\n» ❌ __Manage video chat__\n\nData is **updated** automatically after you **promote me**"
+            f"💡 To use me, I need to be an **Administrator** with the following **permissions**:\n\n» ❌ __Delete messages__\n» ❌ __Add users__\n» ❌ __Manage video chat__\n\nData is **updated** automatically after you **promote me**"
         )
         return
     if not a.can_manage_voice_chats:
@@ -87,12 +87,9 @@ async def play(c: Client, m: Message):
     if not a.can_invite_users:
         await m.reply_text("missing required permission:" + "\n\n» ❌ __Add users__")
         return
-    if not a.can_restrict_members:
-        await m.reply_text("missing required permission:" + "\n\n» ❌ __Restrict users__")
-        return
     try:
-        ubot = await user.get_me()
-        b = await c.get_chat_member(chat_id, ubot.id)
+        ubot = (await user.get_me()).id
+        b = await c.get_chat_member(chat_id, ubot)
         if b.status == "kicked":
             await m.reply_text(
                 f"@{ASSISTANT_NAME} **is banned in group** {m.chat.title}\n\n» **unban the userbot first if you want to use this bot.**"
@@ -107,16 +104,18 @@ async def play(c: Client, m: Message):
                 return
         else:
             try:
-                pope = await c.export_chat_invite_link(chat_id)
-                pepo = await c.revoke_chat_invite_link(chat_id, pope)
-                await user.join_chat(pepo.invite_link)
+                user_id = (await user.get_me()).id
+                link = await c.export_chat_invite_link(chat_id)
+                if "+" in link:
+                    link_hash = (link.replace("+", "")).split("t.me/")[1]
+                    await ubot.join_chat(link_hash)
+                await c.promote_member(chat_id, user_id)
             except UserAlreadyParticipant:
                 pass
             except Exception as e:
                 return await m.reply_text(
                     f"❌ **userbot failed to join**\n\n**reason**: `{e}`"
                 )
-
     if replied:
         if replied.audio or replied.voice:
             suhu = await replied.reply("📥 **downloading audio...**")
@@ -142,7 +141,7 @@ async def play(c: Client, m: Message):
                 )
             else:
              try:
-                await suhu.edit("🔄 **Joining Vc...**")
+                await suhu.edit("🔄 **Joining vc...**")
                 await call_py.join_group_call(
                     chat_id,
                     AudioPiped(
@@ -192,7 +191,7 @@ async def play(c: Client, m: Message):
                             )
                         else:
                             try:
-                                await suhu.edit("🔄 **Joining Vc...**")
+                                await suhu.edit("🔄 **Joining vc...**")
                                 await call_py.join_group_call(
                                     chat_id,
                                     AudioPiped(
@@ -243,7 +242,7 @@ async def play(c: Client, m: Message):
                         )
                     else:
                         try:
-                            await suhu.edit("🔄 **Joining Vc...**")
+                            await suhu.edit("🔄 **Joining vc...**")
                             await call_py.join_group_call(
                                 chat_id,
                                 AudioPiped(
@@ -287,7 +286,7 @@ async def stream(c: Client, m: Message):
     a = await c.get_chat_member(chat_id, aing.id)
     if a.status != "administrator":
         await m.reply_text(
-            f"💡 To use me, I need to be an **Administrator** with the following **permissions**:\n\n» ❌ __Delete messages__\n» ❌ __Restrict users__\n» ❌ __Add users__\n» ❌ __Manage video chat__\n\nData is **updated** automatically after you **promote me**"
+            f"💡 To use me, I need to be an **Administrator** with the following **permissions**:\n\n» ❌ __Delete messages__\n» ❌ __Add users__\n» ❌ __Manage video chat__\n\nData is **updated** automatically after you **promote me**"
         )
         return
     if not a.can_manage_voice_chats:
@@ -303,12 +302,9 @@ async def stream(c: Client, m: Message):
     if not a.can_invite_users:
         await m.reply_text("missing required permission:" + "\n\n» ❌ __Add users__")
         return
-    if not a.can_restrict_members:
-        await m.reply_text("missing required permission:" + "\n\n» ❌ __Restrict users__")
-        return
     try:
-        ubot = await user.get_me()
-        b = await c.get_chat_member(chat_id, ubot.id)
+        ubot = (await user.get_me()).id
+        b = await c.get_chat_member(chat_id, ubot)
         if b.status == "kicked":
             await m.reply_text(
                 f"@{ASSISTANT_NAME} **is banned in group** {m.chat.title}\n\n» **unban the userbot first if you want to use this bot.**"
@@ -323,9 +319,12 @@ async def stream(c: Client, m: Message):
                 return
         else:
             try:
-                pope = await c.export_chat_invite_link(chat_id)
-                pepo = await c.revoke_chat_invite_link(chat_id, pope)
-                await user.join_chat(pepo.invite_link)
+                user_id = (await user.get_me()).id
+                link = await c.export_chat_invite_link(chat_id)
+                if "+" in link:
+                    link_hash = (link.replace("+", "")).split("t.me/")[1]
+                    await ubot.join_chat(link_hash)
+                await c.promote_member(chat_id, user_id)
             except UserAlreadyParticipant:
                 pass
             except Exception as e:
@@ -348,7 +347,7 @@ async def stream(c: Client, m: Message):
             veez = 1
 
         if veez == 0:
-            await suhu.edit(f"❌ yt-dl issues detected\n\n» `{ytlink}`")
+            await suhu.edit(f"❌ yt-dl issues detected\n\n» `{livelink}`")
         else:
             if chat_id in QUEUE:
                 pos = add_to_queue(chat_id, "Radio", livelink, link, "Audio", 0)
@@ -361,7 +360,7 @@ async def stream(c: Client, m: Message):
                 )
             else:
                 try:
-                    await suhu.edit("🔄 **Joining Vc...**")
+                    await suhu.edit("🔄 **Joining vc...**")
                     await call_py.join_group_call(
                         chat_id,
                         AudioPiped(
